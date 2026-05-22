@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Care</string>
+    <string name="accessibility_service_label">Care URL Monitor</string>
+    <string name="accessibility_service_description">Tracks browser URLs for parent-managed device activity monitoring.</string>
+    <string name="monitor_notification_title">Care is monitoring activity</string>
+    <string name="monitor_notification_text">Device activity is being recorded for this parent-managed device.</string>
+</resources>

@@ -1,25 +1,54 @@
 # Care
-An Android application for better parenting.
-This application designed to comprehensively monitor device activity, running in the background as a foreground service.
+
+Care is a native Android application for parent-managed device activity monitoring. It runs a foreground monitoring service, stores captured events locally with Room, and can sync raw activity events to Firebase Auth + Cloud Firestore under a parent account.
+
 ## Features
-1. **Browser URL Tracking**: Uses Android's `AccessibilityService` to capture URLs accessed in major browsers (e.g., Google Chrome).
-2. **App Usage Tracking**: Uses `UsageStatsManager` to monitor which applications are opened and closed, recording their precise start and end times.
-3. **Screen State Monitoring**: Tracks screen wake up (ON) and sleep (OFF) times.
-4. **Device Lock/Unlock Monitoring**: Tracks when the device is unlocked by the user.
-5. **Permission Management**: Provides a user-friendly UI to guide the user in granting specialized permissions like Usage Access and Accessibility.
+
+1. **Browser URL tracking** through `AccessibilityService` for Chrome, Firefox, Edge, and Samsung Internet.
+2. **App usage tracking** through `UsageStatsManager.queryEvents()`.
+3. **Screen and unlock monitoring** for screen on, screen off, and user-present events.
+4. **Local-first storage** with Room and per-event sync state.
+5. **Firebase cloud sync** using parent-owned devices in Firestore.
+6. **Modern Compose UI** with dashboard, permissions, device setup, logs, export, and settings.
+7. **CSV/JSON export** through Android's Storage Access Framework.
+
 ## Technical Requirements
-- **Minimum SDK**: Android 8.0 (API Level 26)
-- **Language**: Kotlin
-- **Architecture**: MVVM with Room Database for local data storage
+
+- Minimum SDK: Android 8.0, API 26
+- Language: Kotlin
+- UI: Jetpack Compose + Material 3
+- Architecture: MVVM-style ViewModel + repositories
+- Local storage: Room
+- Cloud: Firebase Auth + Cloud Firestore
+
+## Firebase Setup
+
+1. Create a Firebase project.
+2. Add an Android app with package name `com.care`.
+3. Download `google-services.json`.
+4. Place it at `app/google-services.json`.
+5. Enable Email/Password sign-in in Firebase Auth.
+6. Create a Cloud Firestore database.
+7. Deploy `firestore.rules`.
+
+The Gradle build applies the Google Services plugin only when `app/google-services.json` exists, so the project can compile before Firebase is configured.
+
 ## Required Permissions
-The app requires the following sensitive permissions to function properly:
-- `android.permission.PACKAGE_USAGE_STATS`: For tracking app usage start and end times.
-- `android.permission.BIND_ACCESSIBILITY_SERVICE`: For reading URLs from browser address bars.
-- `android.permission.FOREGROUND_SERVICE`: To run the monitoring service continuously in the background.
-- `android.permission.RECEIVE_BOOT_COMPLETED`: To automatically start the monitor when the device boots up.
+
+- `android.permission.PACKAGE_USAGE_STATS`: app usage events.
+- `android.permission.BIND_ACCESSIBILITY_SERVICE`: browser URL capture.
+- `android.permission.FOREGROUND_SERVICE`: continuous monitoring.
+- `android.permission.FOREGROUND_SERVICE_SPECIAL_USE`: foreground monitoring on newer Android versions.
+- `android.permission.POST_NOTIFICATIONS`: foreground service notification on Android 13+.
+- `android.permission.RECEIVE_BOOT_COMPLETED`: restart monitoring after reboot when previously enabled.
+
 ## Setup Instructions
-1. Clone or download the repository.
-2. Open the project in Android Studio.
-3. Build and run the app on a physical Android device (emulators may not reflect accurate usage stats or browser behaviors).
-4. Follow the in-app prompts to grant **Usage Access** and **Accessibility** permissions.
-5. Start the monitoring service.
+
+1. Open this folder in Android Studio.
+2. Add `app/google-services.json` for Firebase sync.
+3. Build and run on a physical Android device.
+4. In the app, grant Usage Access, Accessibility, and notification access.
+5. Sign in or create the parent account.
+6. Start monitoring from the Dashboard.
+
+Physical devices are recommended because usage stats, accessibility events, and browser behavior are often incomplete on emulators.
