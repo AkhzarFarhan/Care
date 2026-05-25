@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import android.text.TextUtils
 import androidx.core.content.ContextCompat
@@ -27,7 +28,7 @@ object PermissionUtils {
         usageAccessGranted = hasUsageAccess(context),
         accessibilityGranted = isAccessibilityEnabled(context),
         notificationGranted = hasNotificationPermission(context),
-        batteryOptimizationIgnored = true
+        batteryOptimizationIgnored = isBatteryOptimizationIgnored(context)
     )
 
     fun usageAccessIntent(): Intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
@@ -43,8 +44,8 @@ object PermissionUtils {
                 .setData(Uri.parse("package:${context.packageName}"))
         }
 
-    fun appDetailsIntent(context: Context): Intent =
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    fun batteryOptimizationIntent(context: Context): Intent =
+        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             .setData(Uri.parse("package:${context.packageName}"))
 
     private fun hasUsageAccess(context: Context): Boolean {
@@ -69,6 +70,10 @@ object PermissionUtils {
     private fun hasNotificationPermission(context: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    private fun isBatteryOptimizationIgnored(context: Context): Boolean =
+        (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+            .isIgnoringBatteryOptimizations(context.packageName)
 
     private fun isAccessibilityEnabled(context: Context): Boolean {
         val expected = "${context.packageName}/${UrlMonitorAccessibilityService::class.java.name}"

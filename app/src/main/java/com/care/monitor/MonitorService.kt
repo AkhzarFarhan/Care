@@ -11,10 +11,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.care.R
 import com.care.data.EventType
 import com.care.data.ServiceLocator
+import com.care.firebase.FirebaseSyncRepository
+import com.care.util.PermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -108,8 +111,21 @@ class MonitorService : Service() {
     private fun startSyncLoop() {
         syncJob = scope.launch {
             while (isActive) {
-                runCatching { ServiceLocator.firebaseSyncRepository.syncPending() }
-                delay(30_000)
+                delay(FirebaseSyncRepository.SYNC_INTERVAL_MS)
+                runCatching {
+                    ServiceLocator.firebaseSyncRepository.reportPermissionState(
+                        PermissionUtils.state(this@MonitorService)
+                    ).getOrThrow()
+                }.onFailure { error ->
+                    Log.w(TAG, "Permission-state upload failed.", error)
+                }
+                runCatching {
+                    ServiceLocator.firebaseSyncRepository.syncPending()
+                }.onSuccess { result ->
+                    if (result.failed > 0) Log.w(TAG, result.message)
+                }.onFailure { error ->
+                    Log.w(TAG, "Activity upload initialization failed.", error)
+                }
             }
         }
     }
@@ -135,6 +151,7 @@ class MonitorService : Service() {
             .build()
 
     companion object {
+        private const val TAG = "CareSync"
         private const val CHANNEL_ID = "care_monitoring"
         private const val NOTIFICATION_ID = 42
     }

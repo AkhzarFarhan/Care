@@ -8,7 +8,8 @@ enum class EventType {
     APP_USAGE,
     SCREEN_ON,
     SCREEN_OFF,
-    UNLOCK
+    UNLOCK,
+    PERMISSION_STATUS
 }
 
 enum class SyncStatus {

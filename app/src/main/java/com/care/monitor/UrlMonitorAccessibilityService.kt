@@ -13,7 +13,6 @@ class UrlMonitorAccessibilityService : AccessibilityService() {
     private var lastUrl: String? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (!ServiceLocator.prefs.browserTrackingEnabled) return
         val packageName = event.packageName?.toString() ?: return
         val root = rootInActiveWindow ?: return
         val url = URL_BAR_IDS.asSequence()
@@ -31,7 +30,6 @@ class UrlMonitorAccessibilityService : AccessibilityService() {
                 packageName = packageName,
                 details = url
             )
-            runCatching { ServiceLocator.firebaseSyncRepository.syncPending(limit = 20) }
         }
     }
 
